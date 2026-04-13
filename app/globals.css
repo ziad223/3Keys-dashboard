@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+      --font-janna: var(--font-janna-regular);
+
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: #000 !important;
+}
+html,
+  body,
+  p,
+  span,
+  a,
+  li,
+  button,
+  input,
+  textarea {
+    font-family: var(--font-janna-regular);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-janna-bold);
+  }
+
+  /* تخصيص شريط التمرير لجميع العناصر في الموقع */
+
+/* للمتصفحات التي تستخدم WebKit (Chrome, Edge, Safari, Brave) */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px; /* للتمرير الأفقي */
+}
+
+::-webkit-scrollbar-track {
+  background: #1A1A1A;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #D6533D;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #b84734;
+}
+
+/* لمتصفح Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #D6533D #1A1A1A;
+}
+
+body {
+  scrollbar-width: thin;
+  scrollbar-color: #D6533D #1A1A1A;
+}
+
+div, main, section, aside {
+  scrollbar-width: thin;
+  scrollbar-color: #D6533D #1A1A1A;
+}

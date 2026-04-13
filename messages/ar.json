@@ -1,0 +1,34 @@
+{
+  "Navbar": {
+    "backToSite": "العودة للموقع",
+    "companyName": "شركة الخليج العقارية",
+    "verifiedBroker": "وسيط موثق"
+  },
+  "Sidebar": {
+    "cr": "CR 1234455110",
+    "home": "الرئيسية",
+    "brokerProperties": "عقارات الوسيط",
+    "addProperty": "إضافة عقار",
+    "leads": "الـ Leads",
+    "teamMembers": "فريق الأعضاء",
+    "brokerStats": "إحصائيات الوسيط",
+    "stats": "الإحصائيات",
+    "settings": "الإعدادات",
+    "notifications": "الإشعارات",
+    "logout": "تسجيل الخروج"
+  },
+   "Leads": {
+    "latestLeads": "أحدث الـ Leads",
+    "viewAllLeads": "عرض جميع الـ Leads"
+  },
+  "Team": {
+    "teamPerformance": "أداء الفريق هذا الشهر",
+    "broker": "الوسيط",
+    "properties": "عقاراته",
+    "leads": "leads",
+    "views": "المشاهدات",
+    "status": "الحالة",
+    "active": "نشط",
+    "viewAllTeam": "عرض جميع الفريق"
+  }
+}
