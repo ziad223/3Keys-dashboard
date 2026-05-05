@@ -1,34 +1,34 @@
-// sidebar.tsx - النسخة المحدثة مع دعم التصغير
 'use client' 
 import React, { useState, useEffect } from 'react'
 import { 
-  House, 
-  LayoutDashboard, 
-  Building, 
-  PlusCircle, 
-  Users, 
-  PieChart, 
-  Settings, 
-  Bell, 
-  LogOut,
   ChevronLeft,
-  ChevronRight
+  Receipt,
+  Tags           // بس الأيقونة الجديدة للتصنيفات
 } from 'lucide-react'
 import Image from 'next/image'
-import { useTranslations, useLocale } from 'next-intl'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const Sidebar = ({ isCollapsed = false, onMobile = false }: { isCollapsed?: boolean; onMobile?: boolean }) => {
-  const t = useTranslations('Sidebar');
-  const nt = useTranslations('Navbar');
-  const pathname = usePathname();
-  const locale = useLocale();
-  const [collapsed, setCollapsed] = useState(isCollapsed);
+interface NavItem {
+  id: string;
+  icon: string | React.ReactNode;
+  label: string;
+  href: string;
+  showCount: boolean;
+  count?: number;
+}
 
-  // استماع لحدث التصغير من النافبار
+interface SidebarProps {
+  isCollapsed?: boolean;
+  onMobile?: boolean;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isCollapsed = false, onMobile = false }) => {
+  const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState<boolean>(isCollapsed);
+
   useEffect(() => {
-    const handleCollapseToggle = (event: CustomEvent) => {
+    const handleCollapseToggle = (event: CustomEvent<boolean>) => {
       setCollapsed(event.detail);
     };
     
@@ -36,172 +36,203 @@ const Sidebar = ({ isCollapsed = false, onMobile = false }: { isCollapsed?: bool
     return () => window.removeEventListener('toggleSidebarCollapse', handleCollapseToggle as EventListener);
   }, []);
 
-  // تحديث الحالة عندما يتغير prop isCollapsed
   useEffect(() => {
     setCollapsed(isCollapsed);
   }, [isCollapsed]);
 
   const counts = {
-    properties: 45,   
-    team: 5,          
+    properties: 12487,   
+    agencies: 842,
+    agents: 3215,          
   };
 
-  const navItems = [
-    { id: 'home', icon: LayoutDashboard, label: t('home'), href: `/${locale}`, showCount: false, isCustomIcon: false },
-    { id: 'properties', icon: Building, label: t('brokerProperties'), href: `/${locale}/properties`, showCount: true, count: counts.properties, isCustomIcon: false },
-    { id: 'add', icon: PlusCircle, label: t('addProperty'), href: `/${locale}/add`, showCount: false, isCustomIcon: false },
-    { id: 'leads', icon: '/images/leeds.svg', label: t('leads'), href: `/${locale}/leads`, showCount: false, isCustomIcon: true },
-    { id: 'team', icon: Users, label: t('teamMembers'), href: `/${locale}/team`, showCount: true, count: counts.team, isCustomIcon: false },
-    { id: 'stats', icon: '/images/char-icon.svg', label: t('brokerStats'), href: `/${locale}/stats`, showCount: false, isCustomIcon: true },
-    { id: 'settings', icon: Settings, label: t('settings'), href: `/${locale}/settings`, showCount: false, isCustomIcon: false },
-    { id: 'notifications', icon: Bell, label: t('notifications'), href: `/${locale}/notifications`, showCount: false, isCustomIcon: false },
+  const navItems: NavItem[] = [
+    { id: 'home', icon: '/images/sidebar/sidebar-icon-1.svg', label: 'نظرة عامة', href: '/', showCount: false },
+    { id: 'properties', icon: '/images/sidebar/sidebar-icon-2.svg', label: 'الوحدات العقارية', href: '/real-estate-units', showCount: true, count: counts.properties },
+    { id: 'agencies', icon: '/images/sidebar/sidebar-icon-3.svg', label: 'المكاتب العقارية', href: '/real-estate-offices', showCount: true, count: counts.agencies },
+    { id: 'ads', icon: '/images/sidebar/sidebar-icon-5.svg', label: 'إدارة الاشتراكات ', href: '/subscribes', showCount: false },
+    { id: 'payments', icon: <Receipt size={22}/>, label: 'المدفوعات والفواتير', href: '/payments-and-invoices', showCount: false },
+    { id: 'packages', icon: '/images/sidebar/sidebar-icon-9.svg', label: 'إدارة الباقات', href: '/packages', showCount: false },
+    { id: 'categories', icon: <Tags size={22}/>, label: 'إدارة التصنيفات', href: '/categories', showCount: false },  // ←改了 هنا بس
+    { id: 'blog', icon: '/images/sidebar/sidebar-icon-6.svg', label: 'إدارة المدونة', href: '/blogs', showCount: false },
   ];
 
-  const isActive = (href: string) => {
-    if (href === `/${locale}` || href === `/${locale}/`) {
-      return pathname === href;
+  const isActive = (href: string): boolean => {
+    if (href === '/') {
+      return pathname === '/';
     }
     return pathname.startsWith(href);
   };
 
-  const renderIcon = (item: any, isActiveItem: boolean) => {
-    if (item.isCustomIcon) {
-      return (
-        <Image 
-          src={item.icon} 
-          alt={item.label} 
-          width={22} 
-          height={22}
-          className={isActiveItem ? 'brightness-0 invert' : 'opacity-70'}
-        />
-      );
-    }
-    const IconComponent = item.icon;
-    return <IconComponent size={22} className={isActiveItem ? 'text-white' : 'text-[#B3B3B3]'} />;
+  const handleCollapse = (): void => {
+    const newCollapsedState = !collapsed;
+    setCollapsed(newCollapsedState);
+    window.dispatchEvent(new CustomEvent('toggleSidebarCollapse', { detail: newCollapsedState }));
   };
 
-  // إذا كان السايدبار مصغر على الشاشات الكبيرة
+const renderIcon = (item: NavItem, isActiveItem: boolean): React.ReactNode => {
+  if (typeof item.icon !== 'string') {
+    return (
+      <div className={`transition-all duration-200 ${isActiveItem ? 'text-[#00614E]' : 'text-white'}`}>
+        {item.icon}
+      </div>
+    );
+  }
+  
+  return (
+    <Image 
+      src={item.icon} 
+      alt={item.label} 
+      width={22} 
+      height={22}
+      className={`transition-all duration-200`}
+      style={{
+        filter: isActiveItem 
+          ? 'brightness(0) saturate(100%) invert(29%) sepia(89%) saturate(1234%) hue-rotate(148deg) brightness(95%) contrast(101%)'
+          : 'brightness(0) invert(1)'
+      }}
+    />
+  );
+};
+
+const renderIconCollapsed = (item: NavItem, isActiveItem: boolean): React.ReactNode => {
+  if (typeof item.icon !== 'string') {
+    return (
+      <div className={`transition-all duration-200 ${isActiveItem ? 'text-[#00614E]' : 'text-white'}`}>
+        {item.icon}
+      </div>
+    );
+  }
+  
+  return (
+    <Image 
+      src={item.icon} 
+      alt={item.label} 
+      width={24} 
+      height={24}
+      className={`transition-all duration-200`}
+      style={{
+        filter: isActiveItem 
+          ? 'brightness(0) saturate(100%) invert(29%) sepia(89%) saturate(1234%) hue-rotate(148deg) brightness(95%) contrast(101%)'
+          : 'brightness(0) invert(1)'
+      }}
+    />
+  );
+};
+
+  // الوضع المصغر
   if (collapsed && !onMobile) {
     return (
-      <div className='w-[80px] bg-[#111111] h-full flex flex-col p-2 border-l border-[#222] overflow-y-auto sidebar-scroll'>
-        {/* Profile Icon - مصغر */}
-        <div className='bg-[#1A1A1A] rounded-[20px] p-3 mb-8 flex flex-col items-center'>
-          <div className='w-12 h-12 rounded-[20px] bg-[#D6533D] flex items-center justify-center'>
-            <span className='text-[20px] font-bold text-white'>وخ</span>
+      <div className='w-[80px] bg-[#00614E] h-full flex flex-col py-4 overflow-y-auto sidebar-scroll'>
+        <button 
+          onClick={handleCollapse}
+          className='flex items-center justify-center mb-8 mt-2 cursor-pointer hover:opacity-80 transition-opacity mx-auto'
+        >
+          <div className='w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center'>
+            <Image src="/images/logo.svg" alt="Diyar" width={24} height={24} className="brightness-0 invert" />
           </div>
-        </div>
+        </button>
 
-        {/* Navigation Links - أيقونات فقط */}
-        <nav className='flex-1 flex flex-col gap-2'>
+        <div className='w-full h-px bg-gray-400'></div>
+
+        <nav className='flex-1 flex flex-col  items-center mt-3 gap-2 px-2'>
           {navItems.map((item) => (
             <Link
               key={item.id}
               href={item.href}
-              className={`flex items-center justify-center gap-3 px-2 py-3 rounded-[12px] transition-all ${
-                isActive(item.href)
-                  ? 'bg-[#D6533D] text-white'
-                  : 'text-[#B3B3B3] hover:bg-[#1A1A1A] hover:text-white'
+              className={`group flex items-center justify-center w-[42px] h-[50px] rounded-[10px] transition-all relative ${
+                isActive(item.href) ? 'bg-white text-[#00614E] shadow-lg' : 'hover:bg-white/10'
               }`}
               title={item.label}
             >
-              {renderIcon(item, isActive(item.href))}
-              {item.showCount && (
-                <span className={`absolute top-0 right-0 text-[10px] font-medium px-1 rounded-full ${
-                  isActive(item.href)
-                    ? 'bg-white/20 text-white'
-                    : 'bg-[#D6533D] text-white'
+              {renderIconCollapsed(item, isActive(item.href))}
+              {/* {item.showCount && (
+                <span className={`absolute -top-1 -right-1 text-[10px] font-bold min-w-[18px] h-[18px] flex items-center justify-center px-1 rounded-full ${
+                  isActive(item.href) ? 'bg-[#00614E] text-white' : 'bg-[#D6533D] text-white'
                 }`}>
-                  {item.count}
+                  {item.count && item.count > 999 ? `${Math.floor(item.count / 1000)}k` : item.count}
                 </span>
-              )}
+              )} */}
             </Link>
           ))}
-          <div className='border-t border-[#4A4A4A] my-2'></div>
         </nav>
 
-        {/* Logout - أيقونة فقط */}
-        <button className='mt-auto flex items-center justify-center gap-3 px-2 py-3 text-[#D6533D] hover:bg-[#1A1A1A] rounded-[12px] transition-all'>
-          <LogOut size={22} />
-        </button>
+      
       </div>
     );
   }
 
-  // الوضع الطبيعي (مفرد أو على الموبايل)
   return (
-    <div className='w-[280px] bg-[#111111] h-full flex flex-col p-4 border-l border-[#222] overflow-y-auto sidebar-scroll'>
-      {/* Profile Card */}
-      <div className='bg-[#1A1A1A] rounded-[20px] p-5 mb-8 flex flex-col items-center text-center'>
-        <div className='w-16 h-16 rounded-[20px] bg-[#D6533D] flex items-center justify-center mb-3'>
-          <span className='text-[24px] font-bold text-white'>وخ</span>
-        </div>
-        <h2 className='text-[18px] font-bold text-white mb-1'>{nt('companyName')}</h2>
-        <div className='flex items-center gap-2 mb-1'>
-          <Image src="/images/verified.svg" alt="Verified" width={14} height={14} />
-          <span className='text-[14px] text-[#22C55E]'>{nt('verifiedBroker')}</span>
-        </div>
-        <p className='text-[12px] text-[#B3B3B3] font-mono mt-1'>{t('cr')}</p>
+    <div className='w-[280px] bg-[#00614E] h-full flex flex-col overflow-y-auto sidebar-scroll'>
+      {/* Logo Section */}
+      <div className='p-4 pb-2'>
+        <button 
+          onClick={handleCollapse}
+          className='flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity px-2 mb-6 mt-2'
+        >
+          <Image src="/images/logo.svg" alt="Diyar" width={24} height={24} className="brightness-0 invert" />
+          <h1 className='text-[20px] font-medium text-white'>ديار</h1>
+        </button>
+        <div className='bg-white/20 w-full h-px'></div>
       </div>
 
       {/* Navigation Links */}
-      <nav className='flex-1 flex flex-col gap-2'>
-        {navItems.map((item, index) => (
-          <React.Fragment key={item.id}>
+      <nav className='flex-1 flex flex-col gap-3 px-3 py-2'>
+        {navItems.map((item, index) => {
+          const isFirstItem = index === 0;
+          
+          return (
             <Link
+              key={item.id}
               href={item.href}
-              className={`flex items-center justify-between gap-3 px-4 py-3 rounded-[12px] transition-all ${
-                isActive(item.href)
-                  ? 'bg-[#D6533D] text-white'
-                  : 'text-[#B3B3B3] hover:bg-[#1A1A1A] hover:text-white'
+              className={`group flex items-center justify-between gap-3 px-3 py-3 rounded-[12px] transition-all ${
+                isActive(item.href) ? 'bg-white text-[#00614E] font-medium text-sm shadow-md' : 'hover:bg-white/10'
               }`}
             >
               <div className='flex items-center gap-3'>
-                {renderIcon(item, isActive(item.href))}
-                <span className='text-[15px] font-medium'>{item.label}</span>
-              </div>
-              {item.showCount && (
-                <span className={`text-[12px] font-medium px-2 py-0.5 rounded-full transition-all ${
-                  isActive(item.href)
-                    ? 'bg-white/20 text-white'
-                    : 'bg-[#D6533D]/20 text-[#D6533D]'
+                <div className="w-[18px] h-[18px]">
+                  {renderIcon(item, isActive(item.href))}
+                </div>
+                <span className={`text-[15px] font-medium ${
+                  isActive(item.href) ? 'text-[#00614E]' : 'text-white/80 group-hover:text-white'
                 }`}>
-                  {item.count}
+                  {item.label}
                 </span>
-              )}
+              </div>
+              <div className='flex items-center gap-2'>
+                {item.showCount && (
+                  <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full transition-all ${
+                    isActive(item.href) ? 'bg-[#00614E] text-white' : 'bg-white text-[#00614E] group-hover:bg-white/30'
+                  }`}>
+                    {item.count?.toLocaleString()}
+                  </span>
+                )}
+
+{isFirstItem && (
+  <button 
+    onClick={(e) => {
+      e.preventDefault();
+      handleCollapse();
+    }}
+    className={`p-1 rounded-md hover:bg-black/10 transition-all`}
+  >
+    <ChevronLeft 
+      size={18} 
+      className={`font-bold transition-colors ${
+        isActive(item.href) 
+          ? 'text-[#00614E]' 
+          : 'text-white'       
+      }`}
+    />
+  </button>
+)}
+              </div>
             </Link>
-            {item.id === 'stats' && (
-              <div className='border-t border-[#4A4A4A]'></div>
-            )}
-          </React.Fragment>
-        ))}
+          );
+        })}
       </nav>
 
-      {/* Logout */}
-      <button className='mt-auto flex items-center gap-3 px-4 py-3 text-[#D6533D] hover:bg-[#1A1A1A] rounded-[12px] transition-all font-medium'>
-        <LogOut size={22} />
-        <span>{t('logout')}</span>
-      </button>
-
-      <style jsx>{`
-        .sidebar-scroll::-webkit-scrollbar {
-          width: 4px;
-        }
-        .sidebar-scroll::-webkit-scrollbar-track {
-          background: #1A1A1A;
-          border-radius: 10px;
-        }
-        .sidebar-scroll::-webkit-scrollbar-thumb {
-          background: #D6533D;
-          border-radius: 10px;
-        }
-        .sidebar-scroll::-webkit-scrollbar-thumb:hover {
-          background: #b84734;
-        }
-        .sidebar-scroll {
-          scrollbar-width: thin;
-          scrollbar-color: #D6533D #1A1A1A;
-        }
-      `}</style>
+  
     </div>
   )
 }
